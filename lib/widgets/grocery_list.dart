@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:gap/gap.dart';
 import 'package:http/http.dart' as http;
@@ -105,9 +106,43 @@ class _GroceryListState extends State<GroceryList> {
       content = ListView.builder(
         itemCount: _groceryItems.length,
         itemBuilder: (ctx, index) => Dismissible(
-          onDismissed: (direction) {
-            _removeItem(_groceryItems[index]);
+          direction: DismissDirection.endToStart,
+          confirmDismiss: (direction) async {
+            return await showCupertinoDialog(
+              context: context,
+              builder: (context) {
+                return CupertinoAlertDialog(
+                  title: const Text('Confirm'),
+                  content:
+                      const Text('Are you sure you wish to delete this item?'),
+                  actions: [
+                    CupertinoButton(
+                      child: const Text('Delete'),
+                      onPressed: () {
+                        _removeItem(_groceryItems[index]);
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                    CupertinoButton(
+                      child: const Text('Cancel'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
+                );
+              },
+            );
           },
+          background: Container(
+            padding: const EdgeInsets.only(right: 10),
+            alignment: Alignment.centerRight,
+            color: Colors.red,
+            child: const Icon(
+              CupertinoIcons.delete,
+              color: Colors.white,
+            ),
+          ),
           key: ValueKey(_groceryItems[index].id),
           child: ListTile(
             title: Text(_groceryItems[index].name),
@@ -118,7 +153,7 @@ class _GroceryListState extends State<GroceryList> {
             ),
             trailing: Text(
               _groceryItems[index].quantity.toString(),
-              style: TextStyle(fontSize: 15),
+              style: const TextStyle(fontSize: 15),
             ),
           ),
         ),
